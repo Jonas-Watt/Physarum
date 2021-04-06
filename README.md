@@ -3,7 +3,9 @@
 inspired by: https://www.youtube.com/watch?v=X-iSQQgOd1A
 
 ## molt attraction:
-![example](attr example.gif)
+
+![attr example](attr%20example.gif)
 
 ## molt repulsion
-![example](rep example.gif)
+
+![rep example](rep%20example.gif)
