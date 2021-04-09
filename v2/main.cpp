@@ -2,21 +2,20 @@
 #include <array>
 #include <vector>
 #include <random>
-#include <ctime>
 #include <cmath>
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 
 const float pi = 3.14159265358979323846;
 
-int frame_rate = 120;
-#define scaling 1
-#define map_size 720
+int frame_rate = 30;
+#define scaling 2
+#define map_size 500
 #define map_area map_size * map_size
-#define agent_perc 0.1 // <1
+#define agent_perc 0.15 // <1
 float velocity = 0.7;
 float decay_rate = 0.02; // <1
-float diffusion_rate = 0.7; // >0
+float diffusion_rate = 0.5; // >0
 float sensor_angle = pi/2;
 int sensor_offset = 9;
 float rotation_angle = pi/2;
@@ -83,7 +82,7 @@ float sense(const agent& a, float angle, const std::array<float, map_area>& trai
 	return 0;
 }
 
-void move_agents(std::vector<agent>& agent_vec, const std::array<float, map_area>& trail, const std::array<float, map_area>& data) {
+void move_agents(std::vector<agent>& agent_vec, const std::array<float, map_area>& trail) {
 	// move
 	for(agent& a : agent_vec) {
 		float dx = velocity*cos(pi*2-a.angle);
@@ -94,11 +93,10 @@ void move_agents(std::vector<agent>& agent_vec, const std::array<float, map_area
 			a.position[1] = fmin(map_size-1, fmax(0, a.position[1]+dy));
 			a.angle = unif(re);
 		}
-		else if(((int)a.position[0]!=(int)(a.position[0]+dx) ||
-		   (int)a.position[1]!=(int)(a.position[1]+dy)) &&
-		   data.at((int)(a.position[0]+dx)+(int)(a.position[1]+dy)*map_size)!=0) {
-			a.angle = unif(re);
-		}
+// 		else if(((int)a.position[0]!=(int)(a.position[0]+dx) ||
+// 		   (int)a.position[1]!=(int)(a.position[1]+dy)) &&
+// 		   data.at((int)(a.position[0]+dx)+(int)(a.position[1]+dy)*map_size)!=0)
+// 			a.angle = unif(re);
 		else {
 			a.position[0] += dx;
 			a.position[1] += dy;
@@ -140,22 +138,10 @@ void move_agents(std::vector<agent>& agent_vec, const std::array<float, map_area
 	
 }
 
-
-// map -> scaled pixel array -> draw(pixel array)
-
-void update_image(sf::Image& image, const std::array<float, map_area>& trail, const std::vector<agent>& agent_vec) {
-	for(int i=0; i<map_area; i++) {
-			if(trail.at(i)!=0) {
+void update_image(sf::Image& image, const std::array<float, map_area>& trail) {
+	for(int i=0; i<map_area; i++) 
+			if(trail.at(i)!=0)
 				image.setPixel(i%map_size, (int)(i/map_size), sf::Color(trail.at(i)*255, trail.at(i)*255, trail.at(i)*255, 255));
-// 				square.setPosition((i%map_size)*scaling, (i/map_size)*scaling);
-// 				window.draw(square);
-			} 
-		}
-		for(const agent& a : agent_vec) {
-			sf::Color col = image.getPixel(a.position[0], a.position[1]);
-			image.setPixel(a.position[0], a.position[1], col+sf::Color(0, 0, 255, 100));
-// 			window.draw(square);
-		}
 }
 
 
@@ -169,6 +155,7 @@ int main() {
 	texture.create(map_size, map_size);
 	
 	sf::Sprite sprite;
+	sprite.setScale(scaling, scaling);
 	
 	sf::Image image;
 	image.create(map_size, map_size, sf::Color::Black);
@@ -283,35 +270,17 @@ int main() {
 		}
 		
 		clock.restart();
-		move_agents(agent_vec, trail, data);
+		move_agents(agent_vec, trail);
 		update_data(data, agent_vec);
 		update_trail(trail, data);
 		calculate += clock.getElapsedTime();
 		
 		clock.restart();
 		window.clear(sf::Color::Black);
-		
-// 		for(int i=0; i<map_area; i++) {
-// 			if(trail.at(i)!=0) {
-// 				square.setFillColor(sf::Color(trail.at(i)*255, trail.at(i)*255, trail.at(i)*255, 255));
-// 				square.setPosition((i%map_size)*scaling, (i/map_size)*scaling);
-// 				window.draw(square);
-// 			} 
-// 		}
-// 		square.setFillColor(sf::Color(0, 0, 255, 100));
-// 		for(const agent& a : agent_vec) {
-// 			square.setPosition((int)a.position[0]*scaling, (int)a.position[1]*scaling);
-// 			window.draw(square);
-// 		}
-		
-		update_image(image, trail, agent_vec);
-		
+		update_image(image, trail);
 		texture.update(image);
-		
 		sprite.setTexture(texture);
-		
 		window.draw(sprite);
-		
 		window.display();
 		draw_window += clock.getElapsedTime();
 		
