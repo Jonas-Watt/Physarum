@@ -9,8 +9,8 @@
 const float pi = 3.14159265358979323846;
 
 int frame_rate = 30;
-#define scaling 2
-#define map_size 500
+#define scaling 3
+#define map_size 720
 #define map_area map_size * map_size
 #define agent_perc 0.15 // <1
 float velocity = 0.7;
